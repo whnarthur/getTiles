@@ -75,7 +75,6 @@ class DownloadThread:
         self.tileproj = GoogleProjection(self.maxZoom + 1)
 
         while True:
-            # Fetch a tile from the queue and render it
             r = self.q.get()
             if (r == None):
                 self.q.task_done()
@@ -83,12 +82,7 @@ class DownloadThread:
             else:
                 (name, tile_uri, x, y, z) = r
 
-            exists = ""
-            if os.path.isfile(tile_uri):
-                exists = "exists"
-            else:
-                self.download_tile(tile_uri, x, y, z)
-
+            self.download_tile(tile_uri, x, y, z)
             self.q.task_done()
 
 class WriteThread:
@@ -137,10 +131,6 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
     write_thread = multiprocessing.Process(target=lmdbWriter.loop)
     write_thread.start()
 
-
-    if not os.path.isdir(tile_dir):
-        os.mkdir(tile_dir)
-
     gprj = GoogleProjection(maxZoom + 1)
 
     ll0 = (bbox[0], bbox[3])
@@ -160,10 +150,7 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 continue
             # check if we have directories in place
             str_x = "%s" % x
-            if not os.path.isdir(tile_dir + zoom + '/' + str_x):
-                os.mkdir(tile_dir + zoom + '/' + str_x)
             for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
-                # Validate x co-ordinate
                 if (y < 0) or (y >= 2 ** z):
                     continue
                 str_y = "%s" % y
@@ -186,7 +173,7 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
 if __name__ == "__main__":
     minZoom = 10
-    maxZoom = 11
+    maxZoom = 10
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     #高德卫星影像
