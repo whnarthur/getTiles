@@ -58,20 +58,16 @@ class GoogleProjection:
 
 
 class DownloadThread:
-    # def __init__(self, tile, tile_dir, q, qWrite, printLock):
     def __init__(self, tile, tile_dir, q, printLock):
         self.tile = tile
         self.tile_dir = tile_dir
         self.q = q
-        # self.qWrite = qWrite
         self.printLock = printLock
 
     def download_tile(self, tile_uri, x, y, z):
-        # im = tile.getTile(x, y, z)
-        # key = "%s/%s/%s.png" % (z, x, y)
-        # self.qWrite.put(key, im)
-        pass
-
+        im = tile.getTile(x, y, z)
+        with open(tile_uri, "wb") as fp:
+            fp.write(im)
     def loop(self):
         while True:
             r = self.q.get()
@@ -81,33 +77,8 @@ class DownloadThread:
             else:
                 (name, tile_uri, x, y, z) = r
 
-            # self.download_tile(tile_uri, x, y, z)
+            self.download_tile(tile_uri, x, y, z)
             self.q.task_done()
-
-# class WriteThread:
-#     def __init__(self, lmdb_dir, qWrite):
-#         self.lmdb_dir = lmdb_dir
-#         self.qWrite = qWrite
-#         self.env = lmdb.open(lmdb_dir);
-#         self.txn = self.env.begin(write = True);
-#
-#
-#     def write_tile(self, key, im):
-#         self.txn.put(key, im);
-#         self.txn.commit();
-#
-#     def loop(self):
-#         while True:
-#             r = self.qWrite.get()
-#             if (r == None):
-#                 self.qWrite.task_done()
-#                 break
-#             else:
-#                 (key, im) = r
-#
-#             self.write_tile(key, im)
-#             self.qWrite.task_done()
-
 
 
 def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", num_threads=NUM_THREADS):
@@ -115,25 +86,17 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
     # Launch rendering threads
     queue = multiprocessing.JoinableQueue(32)
-    # qWrite = multiprocessing.JoinableQueue(32)
     printLock = multiprocessing.Lock()
-
-    # 1个写lmdb进程
-    # lmdbWriter = WriteThread(tile_dir, qWrite)
-    # write_thread = multiprocessing.Process(target=lmdbWriter.loop)
-    # write_thread.start()
-
     downloaders = {}
     for i in range(num_threads):
-        # downloader = DownloadThread(tile, tile_dir, queue, qWrite, printLock)
         downloader = DownloadThread(tile, tile_dir, queue, printLock)
         downloader_thread = multiprocessing.Process(target=downloader.loop)
         downloader_thread.start()
         # print "Started render thread %s" % downloader_thread.getName()
         downloaders[i] = downloader_thread
 
-
-
+    if not os.path.isdir(tile_dir):
+        os.mkdir(tile_dir)
     gprj = GoogleProjection(maxZoom + 1)
 
     ll0 = (bbox[0], bbox[3])
@@ -145,10 +108,14 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
         # check if we have directories in place
         zoom = "%s" % z
+        if not os.path.isdir(tile_dir + zoom):
+            os.mkdir(tile_dir + zoom)
         for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
             if (x < 0) or (x >= 2 ** z):
                 continue
             str_x = "%s" % x
+            if not os.path.isdir(tile_dir + zoom + '/' + str_x):
+                os.mkdir(tile_dir + zoom + '/' + str_x)
             for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
                 if (y < 0) or (y >= 2 ** z):
                     continue
@@ -160,13 +127,10 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
     # Signal render threads to exit by sending empty request to queue
     for i in range(num_threads):
         queue.put(None)
-    # qWrite.put(None)
     # wait for pending rendering jobs to complete
     queue.join()
-    # qWrite.join()
     for i in range(num_threads):
         downloaders[i].join()
-    # write_thread.join()
 
 
 if __name__ == "__main__":
@@ -176,4 +140,4 @@ if __name__ == "__main__":
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     #高德卫星影像
     tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
-    download_tiles(tile, bbox, "./hunan", minZoom, maxZoom)
+    download_tiles(tile, bbox, "./hunan_png/", minZoom, maxZoom)
