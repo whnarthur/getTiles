@@ -15,7 +15,7 @@ DEG_TO_RAD = pi / 180
 RAD_TO_DEG = 180 / pi
 
 # Default number of rendering threads to spawn, should be roughly equal to number of CPU cores available
-NUM_THREADS = 48
+NUM_THREADS = 4
 
 
 def minmax(a, b, c):
@@ -86,12 +86,12 @@ class WriteThread:
     def __init__(self, lmdb_dir, qWrite):
         self.lmdb_dir = lmdb_dir
         self.qWrite = qWrite
-        self.env = lmdb.open(lmdb_dir, map_size=1099511627776);
-        self.txn = self.env.begin(write = True);
+        self.env = lmdb.open(lmdb_dir, map_size=1099511627776)
+        self.txn = self.env.begin(write = True)
 
 
     def write_tile(self, key, im):
-        self.txn.put(key, im);
+        self.txn.put(key, im)
 
 
     def loop(self):
@@ -102,7 +102,7 @@ class WriteThread:
             r = self.qWrite.get()
             if (r == None):
                 self.qWrite.task_done()
-                self.txn.commit();
+                self.txn.commit()
                 break
             else:
                 (key, im) = r
@@ -141,6 +141,22 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
     ll0 = (bbox[0], bbox[3])
     ll1 = (bbox[2], bbox[1])
 
+    sum = 0
+    for z in range(minZoom, maxZoom + 1):
+        px0 = gprj.fromLLtoPixel(ll0, z)
+        px1 = gprj.fromLLtoPixel(ll1, z)
+
+        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
+            if (x < 0) or (x >= 2 ** z):
+                continue
+            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
+                if (y < 0) or (y >= 2 ** z):
+                    continue
+                sum+=1
+
+    print sum
+
+    sumOfProcessed = 0
     for z in range(minZoom, maxZoom + 1):
         px0 = gprj.fromLLtoPixel(ll0, z)
         px1 = gprj.fromLLtoPixel(ll1, z)
@@ -157,8 +173,10 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 str_y = "%s" % y
                 tile_uri = tile_dir + zoom + '/' + str_x + '/' + str_y
                 t = (name, tile_uri, x, y, z)
-                print t
+                # print t
                 queue.put(t)
+                sumOfProcessed+=1
+                print "processed : %s%%" % str((sumOfProcessed*1.0)/sum*100)
 
     # Signal render threads to exit by sending empty request to queue
     for i in range(num_threads):
@@ -177,7 +195,7 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
 if __name__ == "__main__":
     minZoom = 10
-    maxZoom = 14
+    maxZoom = 10
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
