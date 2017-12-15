@@ -18,7 +18,7 @@ DEG_TO_RAD = pi / 180
 RAD_TO_DEG = 180 / pi
 
 # Default number of rendering threads to spawn, should be roughly equal to number of CPU cores available
-NUM_THREADS = 1
+NUM_THREADS = 48
 
 
 def minmax(a, b, c):
@@ -102,6 +102,23 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
     ll0 = (bbox[0], bbox[3])
     ll1 = (bbox[2], bbox[1])
 
+    sum = 0
+    for z in range(minZoom, maxZoom + 1):
+        px0 = gprj.fromLLtoPixel(ll0, z)
+        px1 = gprj.fromLLtoPixel(ll1, z)
+
+        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
+            if (x < 0) or (x >= 2 ** z):
+                continue
+            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
+                if (y < 0) or (y >= 2 ** z):
+                    continue
+                sum += 1
+
+
+    print sum
+
+    sumOfProcessed = 0
     for z in range(minZoom, maxZoom + 1):
         px0 = gprj.fromLLtoPixel(ll0, z)
         px1 = gprj.fromLLtoPixel(ll1, z)
@@ -123,6 +140,8 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 tile_uri = tile_dir + zoom + '/' + str_x + '/' + str_y + '.png'
                 t = (name, tile_uri, x, y, z)
                 queue.put(t)
+                sumOfProcessed += 1
+                print "processed : %s%%" % str((sumOfProcessed * 1.0) / sum * 100)
 
     # Signal render threads to exit by sending empty request to queue
     for i in range(num_threads):
@@ -134,10 +153,10 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
 
 if __name__ == "__main__":
-    minZoom = 10
-    maxZoom = 10
+    minZoom = 16
+    maxZoom = 16
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     #高德卫星影像
     tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
-    download_tiles(tile, bbox, "./hunan_png/", minZoom, maxZoom)
+    download_tiles(tile, bbox, "./out/", minZoom, maxZoom)

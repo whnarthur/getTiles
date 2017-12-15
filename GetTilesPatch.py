@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+#根据out里面的lmdb计算缺失的tile,重新下载
 import lmdb
 
 
@@ -156,6 +157,15 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
     print sum
 
+    img_lmdb = lmdb.open("./out")
+    txn = img_lmdb.begin()
+    cursor = txn.cursor()
+    result = []
+    for (idx, (key, value)) in enumerate(cursor):
+        (z, x, y) = key.split('_')
+        result.append((z, x, y))
+    print result
+
     sumOfProcessed = 0
     for z in range(minZoom, maxZoom + 1):
         px0 = gprj.fromLLtoPixel(ll0, z)
@@ -174,9 +184,11 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 tile_uri = tile_dir + zoom + '/' + str_x + '/' + str_y
                 t = (name, tile_uri, x, y, z)
                 # print t
-                queue.put(t)
+                if((z,x,y) not in result):
+                    # print t
+                    queue.put(t)
                 sumOfProcessed+=1
-                print "processed : %s%%" % str((sumOfProcessed*1.0)/sum*100)
+                # print "processed : %s%%" % str((sumOfProcessed*1.0)/sum*100)
 
     # Signal render threads to exit by sending empty request to queue
     for i in range(num_threads):

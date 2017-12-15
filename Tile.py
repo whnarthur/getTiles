@@ -7,7 +7,11 @@ class CTile:
         user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
         headers = {'User-Agent': user_agent}
 
-        url = "http://%s&x=%s&y=%s&z=%s" % (self.baseUrl, x, y, z)
-        request = urllib2.Request(url, headers=headers);
-        tile = urllib2.urlopen(request).read();
-        return tile
+        try:
+            url = "http://%s&x=%s&y=%s&z=%s" % (self.baseUrl, x, y, z)
+            request = urllib2.Request(url, headers=headers);
+            tile = urllib2.urlopen(request).read();
+            return tile
+        except Exception, e:
+            with open("error.txt", "a+") as fp:
+                fp.write(url+"\n")
