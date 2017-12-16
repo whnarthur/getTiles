@@ -15,7 +15,7 @@ DEG_TO_RAD = pi / 180
 RAD_TO_DEG = 180 / pi
 
 # Default number of rendering threads to spawn, should be roughly equal to number of CPU cores available
-NUM_THREADS = 1
+NUM_THREADS = 48
 
 
 def minmax(a, b, c):
@@ -197,8 +197,8 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
 
 if __name__ == "__main__":
-    minZoom = 10
-    maxZoom = 10
+    minZoom = 17
+    maxZoom = 17
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
