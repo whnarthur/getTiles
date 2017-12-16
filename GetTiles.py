@@ -176,7 +176,7 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 # print t
                 queue.put(t)
                 sumOfProcessed+=1
-                print "processed : %s%%" % str((sumOfProcessed*1.0)/sum*100)
+                print "processed : %s%%, %d/%d" % ( str((sumOfProcessed*1.0)/sum*100), sumOfProcessed, sum)
 
     # Signal render threads to exit by sending empty request to queue
     for i in range(num_threads):
@@ -194,8 +194,8 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
 
 if __name__ == "__main__":
-    minZoom = 16
-    maxZoom = 16
+    minZoom = 17
+    maxZoom = 17
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
