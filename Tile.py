@@ -8,10 +8,12 @@ class CTile:
         headers = {'User-Agent': user_agent}
 
         try:
-            url = "http://%s&x=%s&y=%s&z=%s" % (self.baseUrl, x, y, z)
+            url = "http://1%s&x=%s&y=%s&z=%s" % (self.baseUrl, x, y, z)
             request = urllib2.Request(url, headers=headers);
             tile = urllib2.urlopen(request).read();
             return tile
         except Exception, e:
             with open("error.txt", "a+") as fp:
                 fp.write(url+"\n")
+            raise  e
+
