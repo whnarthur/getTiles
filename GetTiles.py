@@ -93,8 +93,10 @@ class WriteThread:
         self.txn = self.env.begin(write = True)
 
 
+
     def write_tile(self, key, im):
         self.txn.put(key, im)
+        self.txn.commit()
 
 
     def loop(self):
@@ -176,8 +178,11 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 str_y = "%s" % y
                 tile_uri = tile_dir + zoom + '/' + str_x + '/' + str_y
                 t = (name, tile_uri, x, y, z)
-                # print t
-                queue.put(t)
+                print t
+                try:
+                    queue.put(t)
+                except Exception, e:
+                    pass
                 sumOfProcessed+=1
                 print "processed : %s%%, %d/%d" % ( str((sumOfProcessed*1.0)/sum*100), sumOfProcessed, sum)
 

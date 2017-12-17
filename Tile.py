@@ -11,6 +11,8 @@ class CTile:
             url = "http://%s&x=%s&y=%s&z=%s" % (self.baseUrl, x, y, z)
             request = urllib2.Request(url, headers=headers);
             tile = urllib2.urlopen(request).read();
+            with open("./tmp/%s_%s_%s.png" %(z, x, y), "wb") as fp:
+                fp.write(tile)
             return tile
         except Exception, e:
             with open("error.txt", "a+") as fp:
