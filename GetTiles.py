@@ -102,20 +102,24 @@ class WriteThread:
 
 
     def loop(self):
-        while True:
-            if self.qWrite.empty():
-                continue
+        try:
+            while True:
+                if self.qWrite.empty():
+                    continue
 
-            r = self.qWrite.get()
-            if (r == None):
+                r = self.qWrite.get()
+                if (r == None):
+                    self.qWrite.task_done()
+                    self.txn.commit()
+                    break
+                else:
+                    (key, im) = r
+
+                self.write_tile(key, im)
                 self.qWrite.task_done()
-                self.txn.commit()
-                break
-            else:
-                (key, im) = r
-
-            self.write_tile(key, im)
-            self.qWrite.task_done()
+        except Exception,e:
+            self.txn.commit()
+            self.qWrite.task_done
 
 
 
