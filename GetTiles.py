@@ -9,13 +9,16 @@ from subprocess import call
 import sys, os
 import multiprocessing
 import Tile
+import datetime
+from multiprocessing import cpu_count
+
 
 
 DEG_TO_RAD = pi / 180
 RAD_TO_DEG = 180 / pi
 
 # Default number of rendering threads to spawn, should be roughly equal to number of CPU cores available
-NUM_THREADS = 48
+NUM_THREADS = cpu_count()
 
 
 def minmax(a, b, c):
@@ -177,7 +180,7 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 str_y = "%s" % y
                 tile_uri = tile_dir + zoom + '/' + str_x + '/' + str_y
                 t = (name, tile_uri, x, y, z)
-                print t
+                # print t
                 try:
                     queue.put(t)
                 except Exception, e:
@@ -201,15 +204,20 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
 
 if __name__ == "__main__":
+    starttime = datetime.datetime.now()
+
     path = "./tmp/"
     if not os.path.exists(path):
         os.makedirs(path)
 
-    minZoom = 18
-    maxZoom = 18
+    minZoom = 10
+    maxZoom = 10
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
     #高德卫星影像
     tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
     download_tiles(tile, bbox, "./out/", minZoom, maxZoom)
+
+    endtime = datetime.datetime.now()
+    print str(endtime-starttime)
