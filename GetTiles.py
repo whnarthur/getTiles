@@ -96,7 +96,6 @@ class WriteThread:
 
     def write_tile(self, key, im):
         self.txn.put(key, im)
-        self.txn.commit()
 
 
     def loop(self):
