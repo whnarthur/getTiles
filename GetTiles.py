@@ -202,8 +202,12 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
 
 
 if __name__ == "__main__":
-    minZoom = 17
-    maxZoom = 17
+    path = "./tmp/"
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    minZoom = 18
+    maxZoom = 18
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
