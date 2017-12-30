@@ -223,8 +223,10 @@ if __name__ == "__main__":
     #高德卫星影像
     #tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
     #高德栅格底图
-    tile = Tile.CTile("webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
-    download_tiles(tile, bbox, "./hunan_10.tar", minZoom, maxZoom)
+    #tile = Tile.CTile("webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
+    #谷歌卫星影像
+    tile = Tile.CTile("mt0.google.cn/maps/vt?lyrs=s%40748&hl=zh-CN&gl=CN")
+    download_tiles(tile, bbox, "./hunan_yingxiang_10.tar", minZoom, maxZoom)
 
     endtime = datetime.datetime.now()
     print str(endtime-starttime)
