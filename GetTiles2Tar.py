@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-
+import StringIO
 import lmdb
 
 
@@ -11,6 +11,7 @@ import multiprocessing
 import Tile
 import datetime
 from multiprocessing import cpu_count
+import tarfile
 
 
 
@@ -58,17 +59,18 @@ class GoogleProjection:
 
 
 class DownloadThread:
-    def __init__(self, tile, tile_dir, q, qWrite, printLock):
+    def __init__(self, tile, tarPath, q, qWrite, printLock):
         self.tile = tile
-        self.tile_dir = tile_dir
+        self.tarPath = tarPath
         self.q = q
         self.qWrite = qWrite
         self.printLock = printLock
 
-    def download_tile(self, tile_uri, x, y, z):
+    def download_tile(self, x, y, z):
         try:
             im = tile.getTile(x, y, z)
-            key = "%s_%s_%s" % (z, x, y)
+            key = "%s/%s/%s/%s_%s.png" % (z, x/10, y/10, x, y)
+            # key = "%s/%s/%s.png" % (z, x, y)
             self.qWrite.put((key, im))
         except Exception, e:
             pass
@@ -85,20 +87,22 @@ class DownloadThread:
             else:
                 (name, tile_uri, x, y, z) = r
 
-            self.download_tile(tile_uri, x, y, z)
+            self.download_tile(x, y, z)
             self.q.task_done()
 
 class WriteThread:
-    def __init__(self, lmdb_dir, qWrite):
-        self.lmdb_dir = lmdb_dir
+    def __init__(self, tarPath, qWrite):
+        self.tar = tarfile.open(tarPath, "w")
         self.qWrite = qWrite
-        self.env = lmdb.open(lmdb_dir, map_size=1099511627776)
-        self.txn = self.env.begin(write = True)
 
 
-
-    def write_tile(self, key, im):
-        self.txn.put(key, im)
+    def write_tile(self, key, picContent):
+        string = StringIO.StringIO()
+        string.write(picContent)
+        string.seek(0)
+        info = tarfile.TarInfo(name=key)
+        info.size = len(string.buf)
+        self.tar.addfile(tarinfo=info, fileobj=string)
 
 
     def loop(self):
@@ -110,7 +114,7 @@ class WriteThread:
                 r = self.qWrite.get()
                 if (r == None):
                     self.qWrite.task_done()
-                    self.txn.commit()
+                    self.tar.close()
                     break
                 else:
                     (key, im) = r
@@ -118,15 +122,13 @@ class WriteThread:
                 self.write_tile(key, im)
                 self.qWrite.task_done()
         except Exception,e:
-            self.txn.commit()
+            self.tar.close()
             self.qWrite.task_done
 
 
 
-
-
-def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", num_threads=NUM_THREADS):
-    print "render_tiles(", bbox, tile_dir, minZoom, maxZoom, name, ")"
+def download_tiles(tile, bbox, tarPath, minZoom=1, maxZoom=18, name="unknown", num_threads=NUM_THREADS):
+    print "render_tiles(", bbox, tarPath, minZoom, maxZoom, name, ")"
 
     # Launch rendering threads
     queue = multiprocessing.JoinableQueue(32)
@@ -134,17 +136,16 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
     printLock = multiprocessing.Lock()
 
 
-
     downloaders = {}
     for i in range(num_threads):
-        downloader = DownloadThread(tile, tile_dir, queue, qWrite, printLock)
+        downloader = DownloadThread(tile, tarPath, queue, qWrite, printLock)
         downloader_thread = multiprocessing.Process(target=downloader.loop)
         downloader_thread.start()
         downloaders[i] = downloader_thread
 
-    # 1个写lmdb进程
-    lmdbWriter = WriteThread(tile_dir, qWrite)
-    write_thread = multiprocessing.Process(target=lmdbWriter.loop)
+    # 1个写tar包进程
+    tarWriter = WriteThread(tarPath, qWrite)
+    write_thread = multiprocessing.Process(target=tarWriter.loop)
     write_thread.start()
 
     gprj = GoogleProjection(maxZoom + 1)
@@ -182,7 +183,7 @@ def download_tiles(tile, bbox, tile_dir, minZoom=1, maxZoom=18, name="unknown", 
                 if (y < 0) or (y >= 2 ** z):
                     continue
                 str_y = "%s" % y
-                tile_uri = tile_dir + zoom + '/' + str_x + '/' + str_y
+                tile_uri =  zoom + '/' + str_x + '/' + str_y
                 t = (name, tile_uri, x, y, z)
                 # print t
                 try:
@@ -220,10 +221,10 @@ if __name__ == "__main__":
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
     #高德卫星影像
-    tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
+    #tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
     #高德栅格底图
-    tile = Tile.CTile("http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
-    download_tiles(tile, bbox, "./out/", minZoom, maxZoom)
+    tile = Tile.CTile("webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
+    download_tiles(tile, bbox, "./hunan_10.tar", minZoom, maxZoom)
 
     endtime = datetime.datetime.now()
     print str(endtime-starttime)
