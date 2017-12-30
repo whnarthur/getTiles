@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:v="urn:schemas-microsoft-com:vml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=GBK"/>
+    <title>���չʾ</title>
+	<style type="text/css">
+body{margin:0; padding:0; }
+</style>
+   <!-- <script src="http://ditu.google.cn/maps?file=api&amp;v=2&amp;key=ABQIAAAAFwwvMUtulYeu3P1lUHux0RSV2TTeTmwMDpSIbdl3Z4FN2_ZykhQr4YK5Ncx7K4DF_oqJkVeUoHu7nQ&hl=zh-CN"
+      type="text/javascript"></script>-->
+	<script type="text/javascript" src="http://api.ishowchina.com/v3/webapi/js/auth?v=3.3.0&t=jsmap&ak=ec85d3648154874552835438ac6a02b2"></script>
+    <script type="text/javascript">
+	var map ;
+    function initialize() {
+	//	IMAP.MapConfig._MAP_PCBGIMG_URL=["http://{s}.192.100.19:55051/v3/tile?z={z}&x={x}&y={y}",["172"]];
+		IMAP.MapConfig._MAP_PCBGIMG_URL=["http://118.190.15.143:8080/maptile/maptile?z={z}&x={x}&y={y}",["172"]];
+		map=new IMAP.Map("map_canvas",{zoom:10,center:new LD.LngLat(116.38729998,39.91028339)});
+		map.addEventListener(IMAP.Constants.CLICK, function(evt) {
+			zoomshow.innerHTML=map.getZoom();
+		}, map)
+		map.addEventListener(IMAP.Constants.MOVE_END, function(evt) {
+			zoomshow.innerHTML=map.getZoom();
+		},map);
+
+     /* if (GBrowserIsCompatible()) {
+        map = new GMap2(document.getElementById("map_canvas"));
+        map.setCenter(new GLatLng(,), 10);
+        //map.addControl(new TextualZoomControl());
+		zoomshow.innerHTML=map.getZoom();
+		map.addControl(new GLargeMapControl());
+
+		GEvent.addListener(map, "click", function() {
+			zoomshow.innerHTML=map.getZoom();
+		});
+		GEvent.addListener(map, "moveend", function() {
+			zoomshow.innerHTML=map.getZoom();
+		});
+
+      }*/
+    }
+	var f=1 ;
+	var myTileLayer ;
+	function delNewtle(tid) {
+		if ( f == 0) {
+			map.removeLayer(myTileLayer);
+			myTileLayer=null;
+			f=1;
+		}
+	}
+    </script>
+  </head>
+
+  <body onload="initialize()" onunload="GUnload()" _onclick=myTileLayer.hide()  >
+	<table width="100%" height="100%" >
+		<tr>
+		<td width="250px">ͼ��id:<INPUT TYPE="text" id="lid_" style="width:250px"><br/>ȡͼurl:<INPUT TYPE="text" id="urlp_" style="width:250px"><br/>��������:<INPUT TYPE="text" id="otp_" style="width:250px"><br/><a href="javascript:addNewtle(11);"><font size="5"  color="#00ff00">չʾ���Ӳ�</font></a><br/><div ><font size="6"  color="#ff0000">Z:</font><font size="6" id="zoomshow" color="#00ff00"></font></div><a href="javascript:delNewtle(11);"> <font size="5"  color="#ff0000">�رյ��Ӳ�</font></a><br/>����ȡͼ��ַ��<font  id="urls_" color="#00ff00" style="display:none"></font><br/><br/><br/><br/>���ĵ�X��<INPUT TYPE="text" id="x_" style="width:150px"><br/>���ĵ�Y��<INPUT TYPE="text" id="y_" style="width:150px"><br/><INPUT TYPE="button" VALUE="GO" ONCLICK="setXY()"></td>
+		<td height="100%"><div id="map_canvas" ></div></td>
+		</tr>
+	</table>
+ <script type="text/javascript">
+ var lid = document.getElementById("lid_").value = "tmc";
+ var urlp = document.getElementById("urlp_").value = "http://172.192.100.28:8889/tile";
+ var otp = document.getElementById("otp_").value = "f=png&scale=1&cache=false";
+ var x = document.getElementById("x_").value = "0";
+ var y = document.getElementById("y_").value = "0";
+function setXY() {
+	map.setCenter(new IMAP.LngLat(document.getElementById("x_").value, document.getElementById("y_").value));
+}
+function addNewtle(tid) {
+	if(f==1) {
+		lid = document.getElementById("lid_").value ;//= "test";
+		urlp = document.getElementById("urlp_").value ;//= "http://172.17.40.98/tile.py";
+		otp = document.getElementById("otp_").value ;//="get=map&cache=off&red=off"
+		//var urls = urlp+'?mid='+lid+'&'+otp;
+		var urls = 'http://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=2&style=8&ltype=11';
+
+		document.getElementById("urls_").innerHTML=urls ;
+		/*var tilelayer = new GTileLayer(null);
+		tilelayer.getTileUrl = function(a,b) {return urls +'&z='+(b)+'&x='+a.x+'&y='+a.y+'&t='+new Date().getTime();};
+		tilelayer.isPng = function() { return true;};
+		tilelayer.getOpacity = function() { return 1.0; }
+		myTileLayer = new GTileLayerOverlay(tilelayer);
+		map.addOverlay(myTileLayer);*/
+
+		myTileLayer = new IMAP.TileLayer({});
+		myTileLayer.setTileUrlFunc(function(x,y,z){
+			return urls +'&z='+z+'&x='+x+'&y='+y+'&t='+new Date().getTime();
+		});
+		map.addLayer(myTileLayer);
+		f=0;
+	}
+}
+<!--
+var winWidth = 0;
+var winHeight = 0;
+function findDimensions(){
+ if (window.innerWidth){
+  winWidth = window.innerWidth;
+ }
+ else if((document.body) && (document.body.clientWidth)){
+  winWidth = document.body.clientWidth;
+ }
+ if(window.innerHeight){
+  winHeight = window.innerHeight;
+ }
+ else if((document.body) && (document.body.clientHeight)){
+  winHeight = document.body.clientHeight;
+ }
+ if (document.documentElement  && document.documentElement.clientHeight && document.documentElement.clientWidth){
+  winHeight = document.documentElement.clientHeight;
+  winWidth = document.documentElement.clientWidth;
+ }
+ document.getElementById("map_canvas").style.height=(winHeight-10)+"px";
+}
+findDimensions();
+window.onresize=findDimensions;
+//-->
+</script>
+  </body>
+</html>
