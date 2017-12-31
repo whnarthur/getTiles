@@ -3,7 +3,7 @@
       xmlns:v="urn:schemas-microsoft-com:vml">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=GBK"/>
-    <title>���չ�</title>
+    <title>演示页面</title>
 	<style type="text/css">
 body{margin:0; padding:0; }
 </style>
@@ -13,7 +13,7 @@ body{margin:0; padding:0; }
     <script type="text/javascript">
 	var map ;
     function initialize() {
-	//	IMAP.MapConfig._MAP_PCBGIMG_URL=["http://{s}.192.100.19:55051/v3/tile?z={z}&x={x}&y={y}",["172"]];
+		//IMAP.MapConfig._MAP_PCBGIMG_URL=["http://{s}.192.100.19:55051/v3/tile?z={z}&x={x}&y={y}",["172"]];
 		IMAP.MapConfig._MAP_PCBGIMG_URL=["http://118.190.15.143:8080/maptile/maptile?z={z}&x={x}&y={y}",["172"]];
 		map=new IMAP.Map("map_canvas",{zoom:10,center:new LD.LngLat(116.38729998,39.91028339)});
 		map.addEventListener(IMAP.Constants.CLICK, function(evt) {
@@ -54,7 +54,7 @@ body{margin:0; padding:0; }
   <body onload="initialize()" onunload="GUnload()" _onclick=myTileLayer.hide()  >
 	<table width="100%" height="100%" >
 		<tr>
-		<td width="250px">ͼ��id:<INPUT TYPE="text" id="lid_" style="width:250px"><br/>ȡͼurl:<INPUT TYPE="text" id="urlp_" style="width:250px"><br/>��������:<INPUT TYPE="text" id="otp_" style="width:250px"><br/><a href="javascript:addNewtle(11);"><font size="5"  color="#00ff00">չʾ���Ӳ�</font></a><br/><div ><font size="6"  color="#ff0000">Z:</font><font size="6" id="zoomshow" color="#00ff00"></font></div><a href="javascript:delNewtle(11);"> <font size="5"  color="#ff0000">�رյ��Ӳ�</font></a><br/>����ȡͼ��ַ��<font  id="urls_" color="#00ff00" style="display:none"></font><br/><br/><br/><br/>���ĵ�X��<INPUT TYPE="text" id="x_" style="width:150px"><br/>���ĵ�Y��<INPUT TYPE="text" id="y_" style="width:150px"><br/><INPUT TYPE="button" VALUE="GO" ONCLICK="setXY()"></td>
+		<td width="250px">id:<INPUT TYPE="text" id="lid_" style="width:250px"><br/>ȡͼurl:<INPUT TYPE="text" id="urlp_" style="width:250px"><br/>��������:<INPUT TYPE="text" id="otp_" style="width:250px"><br/><a href="javascript:addNewtle(11);"><font size="5"  color="#00ff00">չʾ���Ӳ�</font></a><br/><div ><font size="6"  color="#ff0000">Z:</font><font size="6" id="zoomshow" color="#00ff00"></font></div><a href="javascript:delNewtle(11);"> <font size="5"  color="#ff0000">�رյ��Ӳ�</font></a><br/>����ȡͼ��ַ��<font  id="urls_" color="#00ff00" style="display:none"></font><br/><br/><br/><br/>���ĵ�X��<INPUT TYPE="text" id="x_" style="width:150px"><br/>���ĵ�Y��<INPUT TYPE="text" id="y_" style="width:150px"><br/><INPUT TYPE="button" VALUE="GO" ONCLICK="setXY()"></td>
 		<td height="100%"><div id="map_canvas" ></div></td>
 		</tr>
 	</table>
@@ -73,7 +73,8 @@ function addNewtle(tid) {
 		urlp = document.getElementById("urlp_").value ;//= "http://172.17.40.98/tile.py";
 		otp = document.getElementById("otp_").value ;//="get=map&cache=off&red=off"
 		//var urls = urlp+'?mid='+lid+'&'+otp;
-		var urls = 'http://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=2&style=8&ltype=11';
+		//var urls = 'http://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=2&style=8&ltype=11';
+		var urls = 'http://118.190.15.143:8005/maptile/maptile?';
 
 		document.getElementById("urls_").innerHTML=urls ;
 		/*var tilelayer = new GTileLayer(null);
