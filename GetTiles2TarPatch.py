@@ -135,8 +135,11 @@ def download_tiles(tile, bbox, tarPath, minZoom=1, maxZoom=18, name="unknown", n
     # 检查之前的tar包里面已经保存的tile路径
     allTilePathsAlreadySaved = []
     fpTar = tarfile.open(tarPath, "r:")
-    for i in fpTar.getnames():
-        allTilePathsAlreadySaved.append(i)
+    try:
+        for i in fpTar.getnames():
+            allTilePathsAlreadySaved.append(i)
+    except Exception,e:
+        pass
     fpTar.close()
     # print allTilePathsAlreadySaved
 
@@ -214,8 +217,8 @@ if __name__ == "__main__":
     if not os.path.exists(path):
         os.makedirs(path)
 
-    minZoom = 11
-    maxZoom = 11
+    minZoom = 16
+    maxZoom = 16
     #湖南省
     bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
@@ -225,7 +228,7 @@ if __name__ == "__main__":
     #tile = Tile.CTile("webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
     #谷歌卫星影像
     tile = Tile.CTile("mt0.google.cn/maps/vt?lyrs=s%40748&hl=zh-CN&gl=CN")
-    download_tiles(tile, bbox, "./hunan_yingxiang_11.tar", minZoom, maxZoom)
+    download_tiles(tile, bbox, "./hunan_yingxiang_16.tar", minZoom, maxZoom)
 
     endtime = datetime.datetime.now()
     print str(endtime-starttime)

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+# 用于补充未能写入tar包的瓦片,通过解压后的文件夹判断缺少的tile
 import StringIO
 import lmdb
+
 
 
 from math import pi, cos, sin, log, exp, atan
@@ -26,6 +28,14 @@ def minmax(a, b, c):
     a = max(a, b)
     a = min(a, c)
     return a
+
+def listDir(rootDir, allSavedPath):
+    for lists in os.listdir(rootDir):
+        path = os.path.join(rootDir, lists)
+        if os.path.isdir(path):
+            listDir(path, allSavedPath)
+        else:
+            allSavedPath.append(path)
 
 
 class GoogleProjection:
@@ -92,7 +102,7 @@ class DownloadThread:
 
 class WriteThread:
     def __init__(self, tarPath, qWrite):
-        self.tar = tarfile.open(tarPath, "w")
+        self.tar = tarfile.open(tarPath, "a:")
         self.qWrite = qWrite
 
 
@@ -130,6 +140,34 @@ class WriteThread:
 def download_tiles(tile, bbox, tarPath, minZoom=1, maxZoom=18, name="unknown", num_threads=NUM_THREADS):
     print "render_tiles(", bbox, tarPath, minZoom, maxZoom, name, ")"
 
+    # 检查之前的tar包里面已经保存的tile路径
+    allTilePathsAlreadySaved = []
+    rootdir = '16'
+    listDir(rootdir, allTilePathsAlreadySaved)
+    # print allTilePathsAlreadySaved
+
+    allTileNotSaved = []
+    gprj = GoogleProjection(maxZoom + 1)
+    ll0 = (bbox[0], bbox[3])
+    ll1 = (bbox[2], bbox[1])
+    sum = 0
+    for z in range(minZoom, maxZoom + 1):
+        px0 = gprj.fromLLtoPixel(ll0, z)
+        px1 = gprj.fromLLtoPixel(ll1, z)
+        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
+            if (x < 0) or (x >= 2 ** z):
+                continue
+            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
+                if (y < 0) or (y >= 2 ** z):
+                    continue
+                tmpTilePath = "%d/%d/%d/%d_%d.png" % (z, x/10, y/10, x, y)
+                if tmpTilePath not in allTilePathsAlreadySaved:
+                    sum += 1
+                    tile_uri = "%d/%d/%d" % (z, x, y)
+                    t = (name, tile_uri, x, y, z)
+                    allTileNotSaved.append(t)
+    print sum
+
     # Launch rendering threads
     queue = multiprocessing.JoinableQueue(32)
     qWrite = multiprocessing.JoinableQueue(32)
@@ -144,54 +182,21 @@ def download_tiles(tile, bbox, tarPath, minZoom=1, maxZoom=18, name="unknown", n
         downloaders[i] = downloader_thread
 
     # 1个写tar包进程
-    tarWriter = WriteThread(tarPath, qWrite)
+    tarWriter = WriteThread(tarPath+"_new", qWrite)
     write_thread = multiprocessing.Process(target=tarWriter.loop)
     write_thread.start()
 
-    gprj = GoogleProjection(maxZoom + 1)
 
-    ll0 = (bbox[0], bbox[3])
-    ll1 = (bbox[2], bbox[1])
 
-    sum = 0
-    for z in range(minZoom, maxZoom + 1):
-        px0 = gprj.fromLLtoPixel(ll0, z)
-        px1 = gprj.fromLLtoPixel(ll1, z)
-
-        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
-            if (x < 0) or (x >= 2 ** z):
-                continue
-            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
-                if (y < 0) or (y >= 2 ** z):
-                    continue
-                sum+=1
-
-    print sum
 
     sumOfProcessed = 0
-    for z in range(minZoom, maxZoom + 1):
-        px0 = gprj.fromLLtoPixel(ll0, z)
-        px1 = gprj.fromLLtoPixel(ll1, z)
-
-        # check if we have directories in place
-        zoom = "%s" % z
-        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
-            if (x < 0) or (x >= 2 ** z):
-                continue
-            str_x = "%s" % x
-            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
-                if (y < 0) or (y >= 2 ** z):
-                    continue
-                str_y = "%s" % y
-                tile_uri =  zoom + '/' + str_x + '/' + str_y
-                t = (name, tile_uri, x, y, z)
-                # print t
-                try:
-                    queue.put(t)
-                except Exception, e:
-                    pass
-                sumOfProcessed+=1
-                print "processed : %s%%, %d/%d" % ( str((sumOfProcessed*1.0)/sum*100), sumOfProcessed, sum)
+    for t in allTileNotSaved:
+        try:
+            queue.put(t)
+        except Exception, e:
+            pass
+        sumOfProcessed += 1
+        print "processed : %s%%, %d/%d" % (str((sumOfProcessed * 1.0) / sum * 100), sumOfProcessed, sum)
 
     # Signal render threads to exit by sending empty request to queue
     for i in range(num_threads):
