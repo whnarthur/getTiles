@@ -2,10 +2,6 @@
 #-*- coding: utf-8 -*-
 # 用于补充未能写入tar包的瓦片,通过解压后的文件夹判断缺少的tile
 import StringIO
-import lmdb
-
-
-
 from math import pi, cos, sin, log, exp, atan
 from subprocess import call
 import sys, os

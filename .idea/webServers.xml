@@ -10,6 +10,14 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="5beadf61-1719-4944-90be-907af5c4a09c" name="34_docker" url="http://192.168.5.34">
+        <fileTransfer host="192.168.5.34" port="52" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="52" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
