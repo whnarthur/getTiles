@@ -215,15 +215,15 @@ if __name__ == "__main__":
     minZoom = 18
     maxZoom = 18
     #湖南省
-    bbox = (108.790841, 24.636323, 114.261265, 30.126363)
-    # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
+    bbox = (108.790841, 24.636323, 111.526053, 30.126363)
+    # bbox = (111.526053, 24.636323, 114.261265, 30.126363)
     #高德卫星影像
     #tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
     #高德栅格底图
     #tile = Tile.CTile("webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
     #谷歌卫星影像
     tile = Tile.CTile("mt0.google.cn/maps/vt?lyrs=s%40748&hl=zh-CN&gl=CN")
-    download_tiles(tile, bbox, "./hunan_yingxiang_18.tar", minZoom, maxZoom)
+    download_tiles(tile, bbox, "./hunan_yingxiang_18_1.tar", minZoom, maxZoom)
 
     endtime = datetime.datetime.now()
     print str(endtime-starttime)
