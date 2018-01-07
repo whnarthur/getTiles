@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d0f2b382-807c-4eae-aac3-fb34778124f0" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/GetTiles2TarPatchFromTxt.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/ReadTar.py" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/GetTiles2Tar.py" afterPath="$PROJECT_DIR$/GetTiles2Tar.py" />
+      <change beforePath="$PROJECT_DIR$/GetTiles2TarPatchFromTxt.py" afterPath="$PROJECT_DIR$/GetTiles2TarPatchFromTxt.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -80,8 +77,8 @@
       <file leaf-file-name="GetTiles2TarPatchFromTxt.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GetTiles2TarPatchFromTxt.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="433">
-              <caret line="171" column="0" lean-forward="true" selection-start-line="171" selection-start-column="0" selection-end-line="171" selection-end-column="0" />
+            <state relative-caret-position="591">
+              <caret line="238" column="54" lean-forward="false" selection-start-line="238" selection-start-column="54" selection-end-line="238" selection-end-column="54" />
               <folding>
                 <element signature="e#82#97#0" expanded="true" />
               </folding>
@@ -1068,8 +1065,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/GetTiles2TarPatchFromTxt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="433">
-          <caret line="171" column="0" lean-forward="true" selection-start-line="171" selection-start-column="0" selection-end-line="171" selection-end-column="0" />
+        <state relative-caret-position="591">
+          <caret line="238" column="54" lean-forward="false" selection-start-line="238" selection-start-column="54" selection-end-line="238" selection-end-column="54" />
           <folding>
             <element signature="e#82#97#0" expanded="true" />
           </folding>

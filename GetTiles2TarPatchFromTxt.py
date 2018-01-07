@@ -236,7 +236,7 @@ if __name__ == "__main__":
     #tile = Tile.CTile("webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
     #谷歌卫星影像
     tile = Tile.CTile("mt0.google.cn/maps/vt?lyrs=s%40748&hl=zh-CN&gl=CN")
-    download_tiles(tile, bbox, "./hunan_yingxiang_18_1.tar", txtPath, minZoom, maxZoom)
+    download_tiles(tile, bbox, "./hunan_yingxiang_18_3.tar", txtPath, minZoom, maxZoom)
 
     endtime = datetime.datetime.now()
     print str(endtime-starttime)
