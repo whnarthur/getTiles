@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
+# 用于补充未能写入tar包的瓦片,从文本文件中读取已采集的tile信息
 import StringIO
 from math import pi, cos, sin, log, exp, atan
 from subprocess import call
@@ -89,9 +90,8 @@ class DownloadThread:
 
 class WriteThread:
     def __init__(self, tarPath, qWrite):
-        self.tar = tarfile.open(tarPath, "w")
+        self.tar = tarfile.open(tarPath, "a:")
         self.qWrite = qWrite
-        self.fp = open("./tiles.txt", "w")
 
 
     def write_tile(self, key, picContent):
@@ -113,23 +113,62 @@ class WriteThread:
                 if (r == None):
                     self.qWrite.task_done()
                     self.tar.close()
-                    self.fp.close()
                     break
                 else:
                     (key, im) = r
 
                 self.write_tile(key, im)
-                self.fp.write(str(key)+"\n")
                 self.qWrite.task_done()
         except Exception,e:
             self.tar.close()
             self.qWrite.task_done
-            self.fp.close()
 
 
 
-def download_tiles(tile, bbox, tarPath, minZoom=1, maxZoom=18, name="unknown", num_threads=NUM_THREADS):
+def download_tiles(tile, bbox, tarPath, txtPath, minZoom=1, maxZoom=18, name="unknown", num_threads=NUM_THREADS):
     print "render_tiles(", bbox, tarPath, minZoom, maxZoom, name, ")"
+
+    # 检查之前的tar包里面已经保存的tile路径
+    allTilePathsAlreadySaved = []
+    with open(txtPath) as fpTxt:
+        lines = fpTxt.readlines()
+        for line in lines:
+            z = int(line.split('/')[0])
+            x = int(line.split('/')[-1].split('_')[0])
+            y = int(line.split('/')[-1].split('_')[1][:-5])
+            key = "%s/%s/%s" % (z, x, y)
+            allTilePathsAlreadySaved.append(key)
+
+    allTilePathsAlreadySavedSet = set(allTilePathsAlreadySaved)
+    allTileNotSaved = []
+    allTiles = []
+    gprj = GoogleProjection(maxZoom + 1)
+    ll0 = (bbox[0], bbox[3])
+    ll1 = (bbox[2], bbox[1])
+    sum = 0
+    for z in range(minZoom, maxZoom + 1):
+        px0 = gprj.fromLLtoPixel(ll0, z)
+        px1 = gprj.fromLLtoPixel(ll1, z)
+        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
+            if (x < 0) or (x >= 2 ** z):
+                continue
+            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
+                if (y < 0) or (y >= 2 ** z):
+                    continue
+                tmpTilePath = "%d/%d/%d" % (z, x, y)
+                allTiles.append(tmpTilePath)
+
+    allTilesSet = set(allTiles)
+    allTileNotSavedSet = allTilesSet - allTilePathsAlreadySavedSet
+    for tile in allTileNotSavedSet:
+        sum += 1
+        z = int(tile.split('/')[0])
+        x = int(tile.split('/')[1])
+        y = int(tile.split('/')[2])
+        tile_uri = "%d/%d/%d" % (z, x, y)
+        t = (name, tile_uri, x, y, z)
+        allTileNotSaved.append(t)
+    print sum
 
     # Launch rendering threads
     queue = multiprocessing.JoinableQueue(32)
@@ -145,54 +184,21 @@ def download_tiles(tile, bbox, tarPath, minZoom=1, maxZoom=18, name="unknown", n
         downloaders[i] = downloader_thread
 
     # 1个写tar包进程
-    tarWriter = WriteThread(tarPath, qWrite)
+    tarWriter = WriteThread(tarPath+"_new", qWrite)
     write_thread = multiprocessing.Process(target=tarWriter.loop)
     write_thread.start()
 
-    gprj = GoogleProjection(maxZoom + 1)
 
-    ll0 = (bbox[0], bbox[3])
-    ll1 = (bbox[2], bbox[1])
 
-    sum = 0
-    for z in range(minZoom, maxZoom + 1):
-        px0 = gprj.fromLLtoPixel(ll0, z)
-        px1 = gprj.fromLLtoPixel(ll1, z)
-
-        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
-            if (x < 0) or (x >= 2 ** z):
-                continue
-            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
-                if (y < 0) or (y >= 2 ** z):
-                    continue
-                sum+=1
-
-    print sum
 
     sumOfProcessed = 0
-    for z in range(minZoom, maxZoom + 1):
-        px0 = gprj.fromLLtoPixel(ll0, z)
-        px1 = gprj.fromLLtoPixel(ll1, z)
-
-        # check if we have directories in place
-        zoom = "%s" % z
-        for x in range(int(px0[0] / 256.0), int(px1[0] / 256.0) + 1):
-            if (x < 0) or (x >= 2 ** z):
-                continue
-            str_x = "%s" % x
-            for y in range(int(px0[1] / 256.0), int(px1[1] / 256.0) + 1):
-                if (y < 0) or (y >= 2 ** z):
-                    continue
-                str_y = "%s" % y
-                tile_uri =  zoom + '/' + str_x + '/' + str_y
-                t = (name, tile_uri, x, y, z)
-                # print t
-                try:
-                    queue.put(t)
-                except Exception, e:
-                    pass
-                sumOfProcessed+=1
-                print "processed : %s%%, %d/%d" % ( str((sumOfProcessed*1.0)/sum*100), sumOfProcessed, sum)
+    for t in allTileNotSaved:
+        try:
+            queue.put(t)
+        except Exception, e:
+            pass
+        sumOfProcessed += 1
+        print "processed : %s%%, %d/%d" % (str((sumOfProcessed * 1.0) / sum * 100), sumOfProcessed, sum)
 
     # Signal render threads to exit by sending empty request to queue
     for i in range(num_threads):
@@ -213,21 +219,24 @@ if __name__ == "__main__":
     starttime = datetime.datetime.now()
 
     path = "./tmp/"
+    txtPath = "./1.txt"
     if not os.path.exists(path):
         os.makedirs(path)
 
-    minZoom = 10
-    maxZoom = 10
-    #湖南省
+    minZoom = 18
+    maxZoom = 18
+    #湖南省全部
+    # bbox = (108.790841, 24.636323, 114.261265, 30.126363)
+    #湖南省左半部分
     bbox = (108.790841, 24.636323, 111.526053, 30.126363)
-    # bbox = (111.526053, 24.636323, 114.261265, 30.126363)
+    # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
     #高德卫星影像
     #tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
     #高德栅格底图
     #tile = Tile.CTile("webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8")
     #谷歌卫星影像
     tile = Tile.CTile("mt0.google.cn/maps/vt?lyrs=s%40748&hl=zh-CN&gl=CN")
-    download_tiles(tile, bbox, "./hunan_yingxiang_18_1.tar", minZoom, maxZoom)
+    download_tiles(tile, bbox, "./hunan_yingxiang_18_1.tar", txtPath, minZoom, maxZoom)
 
     endtime = datetime.datetime.now()
     print str(endtime-starttime)
