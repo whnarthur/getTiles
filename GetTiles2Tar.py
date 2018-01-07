@@ -91,6 +91,7 @@ class WriteThread:
     def __init__(self, tarPath, qWrite):
         self.tar = tarfile.open(tarPath, "w")
         self.qWrite = qWrite
+        self.fp = open("./tiles.txt", "a+")
 
 
     def write_tile(self, key, picContent):
@@ -112,15 +113,18 @@ class WriteThread:
                 if (r == None):
                     self.qWrite.task_done()
                     self.tar.close()
+                    self.fp.close()
                     break
                 else:
                     (key, im) = r
 
                 self.write_tile(key, im)
+                self.fp.write(str(key)+"\n")
                 self.qWrite.task_done()
         except Exception,e:
             self.tar.close()
             self.qWrite.task_done
+            self.fp.close()
 
 
 
