@@ -177,6 +177,7 @@ def download_tiles(polygonInput, tile, bbox, tarPath, minZoom=1, maxZoom=18, nam
                 ring.AddPoint(l0[0], l1[1])
                 ring.AddPoint(l0[0], l0[1])
                 poly.AddGeometry(ring)
+                print ring
                 if polygonInput.Intersect(poly) or polygonInput.Contains(poly):
                     sum+=1
 
