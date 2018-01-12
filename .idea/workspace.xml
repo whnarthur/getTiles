@@ -39,20 +39,13 @@
       <file leaf-file-name="GetTiles2Tar.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GetTiles2Tar.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
-              <caret line="251" column="31" lean-forward="false" selection-start-line="251" selection-start-column="31" selection-end-line="251" selection-end-column="31" />
+            <state relative-caret-position="315">
+              <caret line="249" column="0" lean-forward="true" selection-start-line="249" selection-start-column="0" selection-end-line="249" selection-end-column="0" />
               <folding>
                 <element signature="e#45#60#0" expanded="true" />
                 <element signature="e#482#526#0" expanded="false" />
               </folding>
             </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
-        <entry file="remoteDebugVfs:///usr/lib64/python2.6/site-packages/osgeo/__init__.py">
-          <provider selected="true" editor-type-id="py-remote-debug-stub-editor">
-            <state />
           </provider>
         </entry>
       </file>
@@ -1053,8 +1046,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/GetTiles2Tar.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="251" column="31" lean-forward="false" selection-start-line="251" selection-start-column="31" selection-end-line="251" selection-end-column="31" />
+        <state relative-caret-position="315">
+          <caret line="249" column="0" lean-forward="true" selection-start-line="249" selection-start-column="0" selection-end-line="249" selection-end-column="0" />
           <folding>
             <element signature="e#45#60#0" expanded="true" />
             <element signature="e#482#526#0" expanded="false" />
