@@ -184,7 +184,7 @@ def download_tiles(tile, bbox, tarPath, txtPath, minZoom=1, maxZoom=18, name="un
         downloaders[i] = downloader_thread
 
     # 1个写tar包进程
-    tarWriter = WriteThread(tarPath+"_new", qWrite)
+    tarWriter = WriteThread(tarPath, qWrite)
     write_thread = multiprocessing.Process(target=tarWriter.loop)
     write_thread.start()
 
@@ -226,9 +226,9 @@ if __name__ == "__main__":
     minZoom = 18
     maxZoom = 18
     #湖南省全部
-    # bbox = (108.790841, 24.636323, 114.261265, 30.126363)
+    bbox = (108.790841, 24.636323, 114.261265, 30.126363)
     #湖南省左半部分
-    bbox = (108.790841, 24.636323, 111.526053, 30.126363)
+    #bbox = (108.790841, 24.636323, 111.526053, 30.126363)
     # bbox = (108.790841, 24.636323, 108.81265, 24.86363)
     #高德卫星影像
     #tile = Tile.CTile("webst04.is.autonavi.com/appmaptile?style=6")
